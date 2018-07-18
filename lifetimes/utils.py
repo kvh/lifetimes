@@ -383,7 +383,7 @@ def _check_inputs(frequency, recency=None, T=None, monetary_value=None):
 
 
 def _customer_lifetime_value(transaction_prediction_model, frequency, recency, T, monetary_value, time=12,
-                             discount_rate=0.01, offset=0):
+                             discount_rate=0.01, offset=False):
     """
     Compute the average lifetime value for a group of one or more customers.
 
@@ -405,8 +405,8 @@ def _customer_lifetime_value(transaction_prediction_model, frequency, recency, T
         the lifetime expected for the user in months. Default: 12
     discount_rate: float, optional
         the monthly adjusted discount rate. Default: 1
-    offset: int, optional
-        offset in months to discount from (for discounting back to first purchase)
+    offset: bool, optional
+        whether to offset discounting back to first purchase
 
     Returns
     -------
@@ -421,7 +421,7 @@ def _customer_lifetime_value(transaction_prediction_model, frequency, recency, T
         # since the prediction of number of transactions is cumulative, we have to subtract off the previous periods
         expected_number_of_transactions = transaction_prediction_model.predict(i, frequency, recency, T) - transaction_prediction_model.predict(i - 30, frequency, recency, T)
         # sum up the CLV estimates of all of the periods
-        df['clv'] += (monetary_value * expected_number_of_transactions) / (1 + discount_rate) ** ((i + offset * 30) / 30)
+        df['clv'] += (monetary_value * expected_number_of_transactions) / (1 + discount_rate) ** ((i + T * int(offset)) / 30)
 
     return df['clv']  # return as a series
 
